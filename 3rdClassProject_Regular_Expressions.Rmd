@@ -111,7 +111,7 @@ Find the string of country names that
 * Have a word in its name that starts with âGaâ
 
 ```{r ex_quant, echo = FALSE}
-grep("South", levels(gDat$country), value = TRUE) #Valores com "South" no início.
+grep("^South", levels(gDat$country), value = TRUE) #Valores com "South" no início.
 grep("land$", levels(gDat$country), value = TRUE) #Valores com "Land" ao final.
 grep("\\Ga", levels(gDat$country), value = TRUE) #Valores com "Ga"ao final.
 ```
@@ -222,18 +222,33 @@ Rewrite the clean.text() function that takes in a string and keeps only alpha-nu
 
 For example  clean.text("Coeur d'Alene") should return coeurdalene
 
-
 ```{r}
-(string <- c("Coeur d'Alene"))
-clean.text <- function(string){
-    #Letras minúsculas
-    temp <- tolower(string)
-    # Remover tudo que não sejam números e letras
-    temp <- stringr::str_replace_all(temp,"[[:punct:]]", " ")
-    # Diminuindo para apenas um whitespace
-    temp <- stringr::str_replace_all(temp,"[\\s]+", " ")
-    } 
-    return(temp)
-}
-```
+clean.text <- function(x, lowercase=TRUE, numbers=TRUE, punctuation=TRUE, spaces=TRUE)
+{
+    #x: string de caracteres
 
+    #Letras minúsculas
+    if (lowercase)
+        x = tolower(x)
+    #Remover números
+    if (numbers)
+        x = gsub("[[:digit:]]", "", x)
+    #Remover símbolos de pontuação
+    if (punctuation)
+        x = gsub("[[:punct:]]", "", x)
+    #Remover todos os espaços
+    if (spaces) {
+        x = gsub("[[:space:]]", "", x)
+    }
+    #Retorno de x
+    x
+}
+
+## Teste da função "clean.text"
+# text
+my_text = "Coeur d'Alene"
+
+# default application
+clean.text(my_text)
+
+```
