@@ -1,0 +1,47 @@
+---
+title: "Scraping de dados da Major League Baseball em R"
+output: html_notebook
+---
+
+```{r}
+install.packages("pacman")
+```
+
+```{r}
+p_load(XML, dplyr)
+
+dat <- readHTMLTable("http://www.baseball-reference.com/games/standings.cgi?year=2015&month=08&day=31&submit=Submit+Date")
+
+## here are the divisions and corresponding elements in the list
+
+# 2 AL EAST
+# 3 AL CENTRAL
+# 4 AL WEST
+# 5 NL EAST
+# 6 NL CENTRAL
+# 7 NL WEST
+```
+
+```{r}
+# create a function for scraping the data given a specific date
+date_scrape <- function(y,m,d) {
+  url <- paste0("http://www.baseball-reference.com/games/standings.cgi?year=",y,"&month=",m, "&day=",d,"&submit=Submit+Date")
+  d <- readHTMLTable(url, stringsAsFactors = FALSE)
+  d <- as.data.frame(d[5])
+  d
+}
+
+# create a complete sequence of dates you want to scrape data for
+dates <- as.data.frame(seq(as.Date("2015/04/05"), as.Date("2015/08/31"), by = "days"))
+names(dates) <- "dates" 
+
+# split the dates so that there are three separate inputs to feed the function
+dates <- colsplit(dates$dates, "-", c("y", "m", "d"))
+
+# use the do() function to iterate the scrape function over all the dates
+
+out <- dates %>% group_by(y,m,d) %>% do(date_scrape(.$y, .$m, .$d))
+
+# view the first 10 rows
+head(out, 10)
+```
