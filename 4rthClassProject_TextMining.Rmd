@@ -1,0 +1,107 @@
+
+--- 
+title: "Text Mining" author: "Leandro Augusto" 
+date: "10 de abril de 2018" 
+output: html_document 
+--- 
+
+Esta atividade discute um processo de representação de um corpus usando a técnica conhecida como Coleção de Palavras (Bag of Words). 
+
+Para esta prática os seguintes pacotes precisam ser carregadas (e, se for o caso, instalados): 
+
+```{r} 
+#install.packages("tm") 
+library("tm") 
+
+#install.packages("SnowballC") 
+library(SnowballC) 
+
+#install.packages("wordcloud") 
+library(wordcloud) 
+library(RColorBrewer) 
+``` 
+
+Neste exemplo, os documentos a serem considerados são do tipo texto e devem estar salvos em uma pasta local do computador, por exemplo, a mesma onde o projeto está sendo desenvolvido. 
+
+```{r} 
+path<-getwd() 
+cname <- file.path(path, "textos") 
+``` 
+
+Agora, os arquivos que estão na pasta textos serão carregados para uma estrutura de corpus: 
+
+```{r} 
+docs <- Corpus(DirSource(cname)) 
+docs$content summary(docs) 
+``` 
+
+Deste ponto em diante começa-se o processo de limpeza do texto com foco na estrturação dos documentos. Começando assim pela remoção de pontuação: 
+
+```{r} 
+docs <- tm_map(docs, removePunctuation) inspect(docs[1]) 
+``` 
+
+Depois desta remoção elimina-se os números presentes nos documentos: 
+
+```{r} 
+docs <- tm_map(docs, removeNumbers) 
+inspect(docs[1]) 
+``` 
+
+E agora, todos os caracteres resultantes são colocados em letras mínusculas: 
+
+```{r} 
+
+docs <- tm_map(docs, tolower) 
+inspect(docs[1]) 
+``` 
+
+Agora, com os documentos minimamente preparados, inicia-se os processos de estruturação. Primeiro com a eliminação de stopwords: 
+
+```{r} 
+docs <- tm_map(docs, removeWords, stopwords("english")) # para caso queira remover palavras específicas 
+
+#docs <- tm_map(docs, removeWords,c("teste1","teste2")) inspect(docs[1]) 
+``` 
+
+Agora, as palavras resultantes são normalizadas para eliminação de sufixos como es, s e etc. 
+
+```{r} 
+#install.packages("SnowballC") 
+#library(SnowballC) 
+docs <- tm_map(docs, stemDocument) 
+inspect(docs[1]) 
+``` 
+
+Por fim, os espaçoes em branco em excesso são removidos: 
+
+```{r} 
+docs <- tm_map(docs, stripWhitespace) 
+inspect(docs) 
+``` 
+
+Agora, ao final da preparação, os documentos são transformados para um formato de texto:
+
+```{r} 
+docs <- tm_map(docs, PlainTextDocument) 
+inspect(docs) 
+``` 
+
+E aqui, as palavras são transformadas em matriz, sendo que as linhas representam os documentos e as colunas, a palavras descobertas no processo.
+
+```{r} 
+dtm <- DocumentTermMatrix(docs) # ou por frequencia invertida 
+#dtm_idf<-weightTfIdf(dtm, normalize = TRUE) inspect(dtm[1, 1:20]) 
+``` 
+
+Para finalidades de análise, deseja-se saber a frequência absoluta de cada palavra em todos os documentos. Ou seja, deve-se somar todas as colunas. 
+
+```{r} 
+freq <- colSums(as.matrix(dtm)) 
+``` 
+
+Como resultado da análise, as frequências são apresentadas graficamente, com o uso da nuvem de palavras. Aqui, apenas as palavras que aparecem no mínimo cinco vezes são apresenatadas. 
+
+```{r} 
+wordcloud(names(freq), freq, min.freq=2) 
+```
